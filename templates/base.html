@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İş Takip Programı</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">İŞ TAKİP PROGRAMI  |</a>
+            <div class="text-white text-center" id="zaman"></div>
+            <script>
+            function tarihSaat() {
+                var date = new Date().toLocaleString('tr-TR');
+                document.getElementById("zaman").innerHTML = date;
+            }
+            tarihSaat();
+            setInterval(tarihSaat, 1000);
+            </script>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <span class="navbar-text me-3">
+                                Merhaba, {{ current_user.username }} 
+                                ({% if current_user.role == 'admin' %}Yönetici
+                                {% else %}Kullanıcı{% endif %})
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('tasks') }}">
+                                {% if current_user.role in ['admin'] %}Tüm Görevler{% else %}Görevlerim{% endif %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('add_task') }}">Yeni Görev</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('calendar') }}">Takvim</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('search') }}">Arama</a>
+                        </li>
+                        {% if current_user.is_admin or current_user.role == 'admin' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin">Kullanıcılar</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle"id="operationsDropdown" role="button" 
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                İşlemler
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="operationsDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('backup') }}">
+                                    <i class="bi bi-download me-2"></i>Yedek Al
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('restore_page') }}">
+                                    <i class="bi bi-upload me-2"></i>Geri Yükle
+                                </a></li>
+                            </ul>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Çıkış</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">Giriş</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('register') }}">Kayıt</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'info' }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    {% if request.endpoint == 'index' %}
+    <div id="textCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#textCarousel" data-bs-slide-to="0" class="active"></button>
+            <button type="button" data-bs-target="#textCarousel" data-bs-slide-to="1"></button>
+            <button type="button" data-bs-target="#textCarousel" data-bs-slide-to="2"></button>
+        </div>
+
+        <div class="carousel-inner text-center bg-light p-5">
+            <div class="carousel-item active">
+                <h2>Kayıt Ol / Giriş Yap</h2>
+            </div>
+            <div class="carousel-item">
+                <h2>Görevlerini Ekle / Görevlerini Düzenle </h2>
+            </div>
+            <div class="carousel-item">
+                <h2>İş Takip Programını Kullan</h2>
+            </div>
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#textCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon bg-dark rounded-circle"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#textCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon bg-dark rounded-circle"></span>
+        </button>
+    </div>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+</body>
+</html>

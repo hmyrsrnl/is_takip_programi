@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="bi bi-cloud-download me-2"></i>Geri Yükleme İşlemi</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <strong><i class="bi bi-exclamation-triangle me-2"></i>Uyarı!</strong> 
+                        Geri yükleme işlemi mevcut veritabanı ve yapılandırma dosyalarının üzerine yazacaktır. 
+                        Bu işlem geri alınamaz, lütfen dikkatli olun.
+                    </div>
+                    
+                    <h5 class="mt-4 mb-3">Mevcut Yedekler</h5>
+                    
+                    <!-- Yedek Listesi -->
+                    <div class="list-group mb-4">
+                        {% for backup in backups %}
+                        <div class="list-group-item backup-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ backup.name }}</h6>
+                                <p class="mb-0 text-muted">{{ backup.date }}</p>
+                                <span class="backup-size">{{ backup.size }}</span>
+                            </div>
+                            <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#restoreModal" data-backup="{{ backup.name }}">
+                                <i class="bi bi-cloud-download me-1"></i>Geri Yükle
+                            </button>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>Henüz yedek dosyası bulunmamaktadır.
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Geri Dön
+                        </a>
+                        <button class="btn btn-outline-dark" onclick="refreshBackups()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Yedekleri Yenile
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Geri Yükleme Onay Modal -->
+<div class="modal fade" id="restoreModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">Geri Yükleme Onayı</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Seçilen yedeği geri yüklemek istediğinizden emin misiniz?</p>
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    <strong>Dikkat:</strong> Bu işlem mevcut veritabanı ve yapılandırma dosyalarının üzerine yazacaktır.
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Yedek Dosyası:</label>
+                    <input type="text" class="form-control" id="selectedBackup" readonly>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-warning" onclick="startRestore()">Geri Yüklemeyi Başlat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .backup-item {
+        transition: all 0.3s ease;
+        border-left: 4px solid #ffc107;
+    }
+    .backup-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #fd7e14;
+    }
+    .backup-size {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    .alert-warning {
+        border-left: 4px solid #ffc107;
+    }
+</style>
+
+<script>
+    // Modal açıldığında seçili yedeği göster
+    document.addEventListener('DOMContentLoaded', function() {
+        const restoreModal = document.getElementById('restoreModal');
+        restoreModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const backupName = button.getAttribute('data-backup');
+            document.getElementById('selectedBackup').value = backupName;
+        });
+    });
+    
+    // Geri yükleme işlemini başlat
+    function startRestore() {
+        const backupName = document.getElementById('selectedBackup').value;
+        
+        // Burada AJAX ile sunucuya geri yükleme isteği gönderilebilir
+        fetch('/restore-backup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ backup_file: backupName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Geri yükleme işlemi başarıyla tamamlandı: ' + backupName);
+                // Modal'ı kapat
+                const modal = bootstrap.Modal.getInstance(document.getElementById('restoreModal'));
+                modal.hide();
+            } else {
+                alert('Geri yükleme işlemi başarısız: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Geri yükleme işlemi sırasında bir hata oluştu.');
+        });
+    }
+    
+    // Yedekleri yenile
+    function refreshBackups() {
+        window.location.reload();
+    }
+</script>
+{% endblock %}

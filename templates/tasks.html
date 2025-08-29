@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>{% if can_view_all %}Tüm Görevler{% else %}Görevlerim{% endif %}</h2>
+    <div>
+        <a href="{{ url_for('add_task') }}" class="btn btn-dark me-2">+ Yeni Görev</a>
+        <a href="{{ url_for('search') }}" class="bg-dark text-white btn btn-outline-primary">Arama</a>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-2">
+        <div class="card">
+            <div class="card-body text-center">
+                <h6 class="card-title">Görev Sayısı</h6>
+                <div class="d-flex justify-content-around">
+                    <div class="text-center">
+                        <span class="badge bg-dark fs-6">{{ tasks|length }}</span>
+                        <div class="small">Toplam</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title text-center">Durum İstatistikleri</h6>
+                <div class="d-flex justify-content-around">
+                    <div class="text-center">
+                        <span class="badge bg-secondary fs-6">{{ tasks|selectattr('status', 'equalto', 'Bekliyor')|list|length}}</span>
+                        <div class="small">Bekliyor</div>
+                    </div>
+                    <div class="text-center">
+                        <span class="badge bg-success fs-6">{{ tasks|selectattr('status', 'equalto', 'Tamamlandi')|list|length }}</span>
+                        <div class="small">Tamamlandı</div>
+                    </div>
+                    <div class="text-center">
+                        <span class="badge bg-warning fs-6">{{ tasks|selectattr('status', 'equalto', 'Devam Ediyor')|list|length }}</span>
+                        <div class="small">Devam Ediyor</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title text-center">Öncelik İstatistikleri</h6>
+                <div class="d-flex justify-content-around">
+                    <div class="text-center">
+                        <span class="badge bg-info fs-6">{{ tasks|selectattr('priority', 'equalto', 'Düşük')|list|length }}</span>
+                        <div class="small">Düşük</div>
+                    </div>
+                    <div class="text-center">
+                        <span class="badge bg-success fs-6">{{ tasks|selectattr('priority', 'equalto', 'Orta')|list|length }}</span>
+                        <div class="small">Orta</div>
+                    </div>
+                    <div class="text-center">
+                        <span class="badge bg-danger fs-6">{{ tasks|selectattr('priority', 'equalto', 'Yüksek')|list|length }}</span>
+                        <div class="small">Yüksek</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% if tasks %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    {% if can_view_all %}
+                    <th>Kullanıcı</th>
+                    {% endif %}
+                    <th>Görev Adı</th>
+                    <th>Açıklama</th>
+                    <th>Durum</th>
+                    <th>Öncelik</th>
+                    <th>Başlangıç Tarihi</th>
+                    <th>Bitiş Tarihi</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    {% if can_view_all %}
+                    <td>
+                        {{ task.user.username }}
+                        {% if task.user_id == current_user.id %}
+                        <span class="badge bg-dark">Sizin</span>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                    <td>
+                        <strong>{{ task.task_name }}</strong>
+                        {% if task.categories %}
+                        <div class="mt-1">
+                            {% for category in task.categories %}
+                            <span class="badge bg-info text-dark me-1">{{ category.category_name }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td>{{ task.description|truncate(50) }}</td>
+                    <td>
+                        <span class="badge bg-{% if task.status == 'Tamamlandi' %}success{% elif task.status == 'Devam Ediyor' %}warning{% else %}secondary{% endif %}">
+                            {{ task.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge bg-{% if task.priority == 'Yüksek' %}danger{% elif task.priority == 'Orta' %}success{% else %}info{% endif %}">
+                            {{ task.priority }}
+                        </span>
+                    </td>
+                    <td>{{ task.start_date.strftime('%d.%m.%Y %H:%M') if task.start_date else '-' }}</td>
+                    <td>{{ task.finish_date.strftime('%d.%m.%Y %H:%M') if task.finish_date else '-' }}</td>
+                    <td>          
+                        <div class="btn-group btn-group-sm">
+                            <a href="{{ url_for('task_detail', task_id=task.id) }}" class="btn btn-outline-dark">Detay</a>
+                            {% if can_edit_all or task.user_id == current_user.id %}
+                            <a href="{{ url_for('edit_task', task_id=task.id) }}" class="btn btn-outline-secondary">Düzenle</a>
+                            {% endif %}
+                            {% if can_edit_all or task.user_id == current_user.id %}
+                            <a href="{{ url_for('delete_task', task_id=task.id) }}" class="btn btn-outline-danger" 
+                               onclick="return confirm('Bu görevi silmek istediğinize emin misiniz?')">Sil</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info text-center">
+        <h4>Görev bulunmamaktadır.</h4>
+        <p>İlk görevi ekle.</p>
+        <a href="{{ url_for('add_task') }}" class="btn btn-primary">İlk Görevi Ekle</a>
+    </div>
+{% endif %}
+{% endblock %}

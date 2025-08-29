@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-dark text-white text-center">
+                <h4 class="mb-0">Yeni Görev Ekle</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="task_name" class="form-label">Görev Adı *</label>
+                                <input type="text" class="form-control" id="task_name" name="task_name" required
+                                       placeholder="Görev adını girin">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="priority" class="form-label">Öncelik</label>
+                                <select class="form-select" id="priority" name="priority">
+                                    {% for priority in priority_options %}
+                                        <option value="{{ priority.value }}" 
+                                                {% if priority.value == 'Orta' %}selected{% endif %}>
+                                            {{ priority.value }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Açıklama</label>
+                        <textarea class="form-control" id="description" name="description" rows="4"
+                                  placeholder="Görev detaylarını açıklayın"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="md-3">
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Durum</label>
+                                <select class="form-select" id="status" name="status">
+                                    {% for status in status_options %}
+                                        <option value="{{ status.value }}" 
+                                                {% if status.value == 'Bekliyor' %}selected{% endif %}>
+                                            {{ status.value }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="start_date" class="form-label">Başlangıç Tarihi</label>
+                                <input id="start_date" type="datetime-local" class="form-control" name="start_date" placeholder="Tarih">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3" class="form-group">
+                                <label for="finish_date" class="form-label">Bitiş Tarihi</label>
+                                <input id="finish_date" type="datetime-local" class="form-control" name="finish_date" placeholder="Tarih">
+                            </div>
+                        </div> 
+                    </div>
+
+                    {% if can_edit_all %}
+                    <div class="mb-3">
+                        <label for="user_id" class="form-label">Kullanıcı</label>
+                        <select class="form-select" id="user_id" name="user_id">
+                            {% for user in users %}
+                                <option value="{{ user.id }}" 
+                                        {% if user.id == current_user.id %}selected{% endif %}>
+                                    {{ user.username }}
+                                    {% if user.id == current_user.id %}(Siz){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('tasks') }}" class="btn btn-secondary me-md-2">İptal</a>
+                        <button type="submit" class="text-white text-center btn-dark">Görevi Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
