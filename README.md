@@ -42,26 +42,26 @@ Repository içerisinde bulunan `app.db` dosyası:
 ## Kurulum ve Çalıştırma
 
 ### Projeyi Klonla
-git clone https://github.com/hmyrsrnl/is_takip_programi.git
-cd is_takip_programi
+- git clone https://github.com/hmyrsrnl/is_takip_programi.git
+- cd is_takip_programi
 
 ### Sanal Ortam Oluştur
-python -m venv myenv
-source myenv/bin/activate
+- python -m venv myenv
+- source myenv/bin/activate
 
 ### Gerekli Paketleri Yükle
-pip install -r requirements.txt
+- pip install -r requirements.txt
 
 ### Uygulamayı Çalıştır
-python app.py
+- python app.py
 
 ---
 
 ## Proje Amacı
-Flask ile web tabanlı uygulama geliştirme
-Veritabanı tasarımı ve ORM kullanımı
-Kullanıcı kimlik doğrulama ve yetkilendirme
-Test yazma ve teknik dokümantasyon
+- Flask ile web tabanlı uygulama geliştirme
+- Veritabanı tasarımı ve ORM kullanımı
+- Kullanıcı kimlik doğrulama ve yetkilendirme
+- Test yazma ve teknik dokümantasyon
 
 ---
 
